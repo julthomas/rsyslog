@@ -65,6 +65,10 @@ typedef struct _instanceData {
 	uchar	*tplName;			/* format template to use */
 } instanceData;
 
+/* Pointer to pass NULL to mysql_connect (default password of
+ * configuration file). */
+char *dbpwd = NULL;
+
 typedef struct wrkrInstanceData {
 	instanceData *pData;
 	MYSQL	*hmysql;			/* handle to MySQL */
@@ -81,10 +85,10 @@ static configSettings_t cs;
 /* tables for interfacing with the v6 config system */
 /* action (instance) parameters */
 static struct cnfparamdescr actpdescr[] = {
-	{ "server", eCmdHdlrGetWord, 1 },
-	{ "db", eCmdHdlrGetWord, 1 },
-	{ "uid", eCmdHdlrGetWord, 1 },
-	{ "pwd", eCmdHdlrGetWord, 1 },
+	{ "server", eCmdHdlrGetWord, 0 },
+	{ "db", eCmdHdlrGetWord, 0 },
+	{ "uid", eCmdHdlrGetWord, 0 },
+	{ "pwd", eCmdHdlrGetWord, 0 },
 	{ "serverport", eCmdHdlrInt, 0 },
 	{ "mysqlconfig.file", eCmdHdlrGetWord, 0 },
 	{ "mysqlconfig.section", eCmdHdlrGetWord, 0 },
@@ -221,7 +225,7 @@ static rsRetVal initMySQL(wrkrInstanceData_t *pWrkrData, int bSilent)
 		}
 		/* Connect to database */
 		if(mysql_real_connect(pWrkrData->hmysql, pData->dbsrv, pData->dbuid,
-				      pData->dbpwd, pData->dbname, pData->dbsrvPort, NULL, 0) == NULL) {
+				      dbpwd, pData->dbname, pData->dbsrvPort, NULL, 0) == NULL) {
 			reportDBError(pWrkrData, bSilent);
 			closeMySQL(pWrkrData); /* ignore any error we may get */
 			ABORT_FINALIZE(RS_RET_SUSPENDED);
@@ -346,6 +350,7 @@ CODESTARTnewActInst
 		} else if(!strcmp(actpblk.descr[i].name, "pwd")) {
 			cstr = es_str2cstr(pvals[i].val.d.estr, NULL);
 			strncpy(pData->dbpwd, cstr, sizeof(pData->dbpwd));
+			dbpwd = pData->dbpwd; /* if not given, the password is NULL */
 			free(cstr);
 		} else if(!strcmp(actpblk.descr[i].name, "mysqlconfig.file")) {
 			pData->configfile = (uchar*)es_str2cstr(pvals[i].val.d.estr, NULL);
