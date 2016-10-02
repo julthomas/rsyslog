@@ -67,6 +67,7 @@ static struct cnfparamdescr parserpdescr[] = {
 	{ "detect.yearaftertimestamp", eCmdHdlrBinary, 0 },
 	{ "permit.squarebracketsinhostname", eCmdHdlrBinary, 0 },
 	{ "permit.slashesinhostname", eCmdHdlrBinary, 0 },
+	{ "permit.arobasesinhostname", eCmdHdlrBinary, 0 },
 	{ "permit.atsignsinhostname", eCmdHdlrBinary, 0 },
 	{ "force.tagendingbycolon", eCmdHdlrBinary, 0},
 	{ "remove.msgfirstspace", eCmdHdlrBinary, 0},
@@ -147,6 +148,8 @@ CODESTARTnewParserInst
 			inst->bPermitSquareBracketsInHostname = (int) pvals[i].val.d.n;
 		} else if(!strcmp(parserpblk.descr[i].name, "permit.slashesinhostname")) {
 			inst->bPermitSlashesInHostname = (int) pvals[i].val.d.n;
+		} else if(!strcmp(parserpblk.descr[i].name, "permit.arobasesinhostname")) {
+			inst->bPermitAtSignsInHostname = (int) pvals[i].val.d.n;
 		} else if(!strcmp(parserpblk.descr[i].name, "permit.atsignsinhostname")) {
 			inst->bPermitAtSignsInHostname = (int) pvals[i].val.d.n;
 		} else if(!strcmp(parserpblk.descr[i].name, "force.tagendingbycolon")) {
