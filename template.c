@@ -97,6 +97,7 @@ static struct cnfparamdescr cnfparamdescrProperty[] = {
 	{ "droplastlf", eCmdHdlrBinary, 0 },
 	{ "fixedwidth", eCmdHdlrBinary, 0 },
 	{ "mandatory", eCmdHdlrBinary, 0 },
+	{ "nosqlescape", eCmdHdlrBinary, 0 },
 	{ "spifno1stsp", eCmdHdlrBinary, 0 }
 };
 static struct cnfparamblk pblkProperty =
@@ -205,8 +206,10 @@ tplToString(struct template *__restrict__ const pTpl,
 			 * rgerhards, 2005-09-22: the option values below look somewhat misplaced,
 			 * but they are handled in this way because of legacy (don't break any
 			 * existing thing).
+			 * jthomas, 2016-10-03: ability to disable SQL escaping on a property
+			 * basis via option bDisableSQL.
 			 */
-			if(pTpl->optFormatEscape == SQL_ESCAPE)
+			if(pTpl->optFormatEscape == SQL_ESCAPE && pTpe->data.field.options.bDisableSQL != 1)
 				doEscape(&pVal, &iLenVal, &bMustBeFreed, SQL_ESCAPE);
 			else if(pTpl->optFormatEscape == JSON_ESCAPE)
 				doEscape(&pVal, &iLenVal, &bMustBeFreed, JSON_ESCAPE);
@@ -842,6 +845,8 @@ static void doOptions(unsigned char **pp, struct templateEntry *pTpe)
 			}
 		 } else if(!strcmp((char*)Buf, "mandatory-field")) {
 			 pTpe->data.field.options.bMandatory = 1;
+		 } else if(!strcmp((char*)Buf, "nosqlescape")) {
+			 pTpe->data.field.options.bDisableSQL = 1;
 		 } else {
 			errmsg.LogError(0, NO_ERRCODE, "template error: invalid field option '%s' "
 				"specified - ignored", Buf);
@@ -1464,6 +1469,7 @@ createPropertyTpe(struct template *pTpl, struct cnfobj *o)
 	int i;
 	int droplastlf = 0;
 	int spifno1stsp = 0;
+	int nosqlescape = 0;
 	int mandatory = 0;
 	int frompos = -1;
 	int topos = -1;
@@ -1507,6 +1513,8 @@ createPropertyTpe(struct template *pTpl, struct cnfobj *o)
 		} else if(!strcmp(pblkProperty.descr[i].name, "spifno1stsp")) {
 			spifno1stsp = pvals[i].val.d.n;
 			bComplexProcessing = 1;
+		} else if(!strcmp(pblkProperty.descr[i].name, "nosqlescape")) {
+			nosqlescape = pvals[i].val.d.n;
 		} else if(!strcmp(pblkProperty.descr[i].name, "outname")) {
 			outname = (uchar*)es_str2cstr(pvals[i].val.d.estr, NULL);
 		} else if(!strcmp(pblkProperty.descr[i].name, "position.from")) {
@@ -1721,6 +1729,7 @@ createPropertyTpe(struct template *pTpl, struct cnfobj *o)
 	CHKiRet(msgPropDescrFill(&pTpe->data.field.msgProp, name, strlen((char*)name)));
 	pTpe->data.field.options.bDropLastLF = droplastlf;
 	pTpe->data.field.options.bSPIffNo1stSP = spifno1stsp;
+	pTpe->data.field.options.bDisableSQL = nosqlescape;
 	pTpe->data.field.options.bMandatory = mandatory;
 	pTpe->data.field.options.bFixedWidth = fixedwidth;
 	pTpe->data.field.eCaseConv = caseconv;

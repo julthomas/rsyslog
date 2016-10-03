@@ -130,6 +130,7 @@ struct templateEntry {
 				unsigned bFromPosEndRelative: 1;/* is From/To-Pos relative to end of string? */
 				unsigned bFixedWidth: 1;	/* space pad to toChar if string is shorter */
 				unsigned bDateInUTC: 1;		/* should date be expressed in UTC? */
+				unsigned bDisableSQL: 1;	/* should we temporary disable SQL escaping? */
 			} options;		/* options as bit fields */
 		} field;
 	} data;
