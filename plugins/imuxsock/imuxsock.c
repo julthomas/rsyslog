@@ -970,6 +970,11 @@ SubmitMsg(uchar *pRcv, int lenRcv, lstn_t *pLstn, struct ucred *cred, struct tim
 			--lenMsg;
 		}
 		bufParseTAG[i] = '\0';	/* terminate string */
+
+		/* strip tag/msg separator */
+		if (lenMsg > 0 && *parse == ' ')
+			--lenMsg;
+
 		if(pLstn->bWritePid)
 			fixPID(bufParseTAG, &i, cred);
 		MsgSetTAG(pMsg, bufParseTAG, i);
